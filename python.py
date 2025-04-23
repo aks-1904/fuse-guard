@@ -1,4 +1,3 @@
-pip install pyserial
 import serial
 
 # Replace with your COM port and baud rate

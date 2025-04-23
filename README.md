@@ -1,3 +1,16 @@
+# 🔌 FuseGuard - Circuit Overload Protection System
+
+**FuseGuard** is a smart electronics safety system designed to monitor current flow in a circuit using an ACS712 sensor. It automatically disconnects the circuit using a relay if the current exceeds a safe threshold. Additionally, it displays real-time current on an LCD and provides alerts via LEDs and a buzzer.
+
+---
+
+## 📷 Project Preview
+
+![Circuit Diagram](circuit-diagram.png)
+
+---
+
+## ⚙️ Components Used
 # FuseGuard: Circuit Overload Protection System
 
 ## Overview
@@ -236,3 +249,94 @@ void loop() {
 
 Project by: AKSHAY SHARMA
 Date: TBD
+- Arduino Uno
+- ACS712 Current Sensor (5A/20A/30A based on requirement)
+- Relay Module (5V)
+- 16x2 LCD Display (with I2C backpack)
+- Red LED (Overload indicator)
+- Green LED (Normal condition)
+- Active Buzzer
+- Fuse (based on application)
+- 220Ω resistors (for LEDs)
+- Breadboard, jumper wires
+
+---
+
+## 🔧 Working Principle
+
+1. The ACS712 sensor continuously monitors the current.
+2. Current is displayed on a 16x2 LCD.
+3. If the current exceeds a preset threshold:
+   - Relay disconnects the load
+   - Red LED lights up
+   - Buzzer sounds to notify overload
+4. In normal conditions:
+   - Load remains connected
+   - Green LED stays on
+
+---
+
+## 🧠 Arduino Sketch Summary
+
+```cpp
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+const int sensorPin = A0;
+const int relayPin = 8;
+const int greenLedPin = 9;
+const int redLedPin = 10;
+const int buzzerPin = 11;
+
+const float currentThreshold = 5.0; // Adjust threshold as needed
+
+void setup() {
+  Serial.begin(9600);
+  lcd.begin();
+  lcd.backlight();
+
+  pinMode(relayPin, OUTPUT);
+  pinMode(greenLedPin, OUTPUT);
+  pinMode(redLedPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+  digitalWrite(relayPin, HIGH);
+  Serial.println("System Initialized. Monitoring current...");
+}
+
+void loop() {
+  int sensorValue = analogRead(sensorPin);
+  float voltage = sensorValue * (5.0 / 1023.0);
+  float current = (voltage - 2.5) / 0.185; // For 5A ACS712
+
+  Serial.print("Current: ");
+  Serial.print(current);
+  Serial.println(" A");
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Current: ");
+  lcd.print(current, 2);
+  lcd.print(" A");
+
+  if (abs(current) > currentThreshold) {
+    digitalWrite(relayPin, LOW);
+    digitalWrite(redLedPin, HIGH);
+    digitalWrite(greenLedPin, LOW);
+    digitalWrite(buzzerPin, HIGH);
+    lcd.setCursor(0, 1);
+    lcd.print("Overload! CUT OFF");
+    Serial.println("⚠️ Overload detected! Relay OFF.");
+  } else {
+    digitalWrite(relayPin, HIGH);
+    digitalWrite(redLedPin, LOW);
+    digitalWrite(greenLedPin, HIGH);
+    digitalWrite(buzzerPin, LOW);
+    lcd.setCursor(0, 1);
+    lcd.print("Status: Normal");
+    Serial.println("✅ Current normal. Relay ON.");
+  }
+
+  delay(1000);
+}
