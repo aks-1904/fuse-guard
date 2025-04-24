@@ -1,4 +1,4 @@
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h> //  https://github.com/johnrickman/LiquidCrystal_I2C
 
 // LCD setup
 LiquidCrystal_I2C lcd(0x27, 16, 2);
